@@ -19,7 +19,11 @@ function main() {
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><circle cx="7" cy="12" r="2" fill="currentColor"/><circle cx="15" cy="12" r="2" fill="currentColor"/></svg>
     </a>`,
   });
-  logseq.setMainUIInlineStyle({ zIndex: 11 });
+  // Logseq's app header is full-width, 48px tall, z-index 10, and clickable.
+  // zIndex: 11 loses to it on the desktop build, making the panel's top
+  // strip (filter bar) unclickable — verified via browser-harness + live
+  // web-Logseq inspection. Raise well above it.
+  logseq.setMainUIInlineStyle({ zIndex: 9999 });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") logseq.hideMainUI(); });
   void syncTheme();
   logseq.App.onThemeModeChanged(({ mode }) => {

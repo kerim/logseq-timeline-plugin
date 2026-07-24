@@ -15,7 +15,7 @@ export function mountTimeline(
   build: { source: string; uuidByIndex: string[] },
   cb: TimelineCallbacks,
 ): { destroy(): void } | { error: string } {
-  const { timeline, parsed } = renderChronos(container, build.source, {});
+  const { timeline, parsed } = renderChronos(container, build.source, { settings: { align: "center" } });
   const items: Array<{ id: unknown }> = (parsed as { items?: Array<{ id: unknown }> }).items ?? [];
   const map = buildIdMap(items.map((i) => i.id), build.uuidByIndex);
   if (!map) {
