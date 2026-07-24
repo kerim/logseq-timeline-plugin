@@ -1,6 +1,9 @@
 import { renderChronos } from "chronos-timeline-md";
 
 export async function runProbe(out: HTMLElement) {
+  // Key fallback: tries full name, bare last segment, colon-prefixed (bare will hit on DB graphs)
+  const k = (o: Record<string, unknown>, name: string) => o[name] ?? o[name.split("/").pop()!] ?? o[":" + name];
+
   const log = (label: string, v: unknown) => {
     const h = document.createElement("h4");
     h.textContent = label;
@@ -24,14 +27,14 @@ export async function runProbe(out: HTMLElement) {
 
     const flat: Array<Record<string, unknown>> = (props ?? []).map((r: unknown[]) => r[0] as Record<string, unknown>);
     const identOf = (title: string) =>
-      flat.find((p) => p["block/title"] === title || p[":block/title"] === title);
+      flat.find((p) => k(p, "block/title") === title);
     const d = identOf("tl-date"), t = identOf("tl-topic"), ty = identOf("tl-type");
     log("resolved idents", { d, t, ty });
 
     // (a) full node query with nested pulls
     if (d && t && ty) {
       try {
-        const ident = (p: Record<string, unknown>) => String(p["db/ident"] ?? p[":db/ident"]);
+        const ident = (p: Record<string, unknown>) => String(k(p, "db/ident"));
         const q = `[:find (pull ?b [:block/uuid :block/title
             ${ident(d)}
             {${ident(t)} [:block/title :block/uuid]}
@@ -59,8 +62,8 @@ export async function runProbe(out: HTMLElement) {
       `[:find (pull ?b [:block/uuid :block/title])
         :where [?b :block/tags ?tag] [?tag :block/title "tl"]]`)) ?? [];
     for (const [node] of rows as Array<[Record<string, string>]>) {
-      const uuid = node["block/uuid"] ?? node[":block/uuid"];
-      const title = node["block/title"] ?? node[":block/title"];
+      const uuid = k(node, "block/uuid");
+      const title = k(node, "block/title");
       const btn = document.createElement("button");
       btn.textContent = `pushState → ${title}`;
       btn.onclick = () => { logseq.hideMainUI(); logseq.App.pushState("page", { name: String(uuid) }); };
