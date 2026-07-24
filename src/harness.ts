@@ -35,6 +35,12 @@ const nodeRows = [
     title: "Broken test", uuid: "node-broken", content: "Broken test", "full-title": "Broken test",
     ":user.property/tl-date-x1": { title: "sometime in spring" },
   }],
+  [{
+    title: "Meiji era", uuid: "node-meiji", content: "Meiji era", "full-title": "Meiji era",
+    ":user.property/tl-date-x1": { title: "1820~1840" },
+    ":user.property/tl-topic-x2": [topicJapan],
+    ":user.property/tl-type-x3": { title: "era" },
+  }],
 ];
 
 let settingsStore: Record<string, unknown> = {};

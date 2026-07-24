@@ -49,7 +49,10 @@ html, body { margin: 0; height: 100%; }
 #tlp-canvas .vis-item.vis-range.tlp-whisker .vis-item-content {
   position: absolute;
   left: 0; /* label starts at the left cap, like event labels start at their anchor */
-  bottom: 100%;
+  /* vis-timeline writes an inline `transform` on content elements during
+     redraws, so the collision nudge must live in the inset offsets instead:
+     negative --tlp-label-shift raises an above-label further up. */
+  bottom: calc(100% - var(--tlp-label-shift, 0px));
   white-space: nowrap;
   overflow: visible;
   padding: 0 2px 2px;
@@ -60,4 +63,10 @@ html, body { margin: 0; height: 100%; }
   color: var(--tlp-whisker-color, var(--tlp-fg));
   font-size: 12px;
   z-index: 6; /* above normal range/box items (5), below points (10) */
+}
+#tlp-canvas .vis-item.vis-range.tlp-whisker.tlp-whisker-below .vis-item-content {
+  /* collision stagger: clashing labels go under the bracket; positive
+     --tlp-label-shift pushes further down (set per item by timeline.ts) */
+  bottom: auto;
+  top: calc(100% + var(--tlp-label-shift, 0px));
 }

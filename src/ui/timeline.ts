@@ -39,6 +39,57 @@ function updateWhiskerClasses(container: HTMLElement): void {
     }
     item.classList.toggle("tlp-whisker", shouldWhisker);
   });
+  staggerWhiskerLabels(container);
+}
+
+// Whisker labels float outside the item boxes vis-timeline uses for its
+// stacking layout, so two nearby whiskers can print their labels on top of
+// each other. After every re-measure, walk the whiskers left-to-right and
+// drop any label that would overlap an already-placed one to *below* its
+// bracket instead (see `.tlp-whisker-below` in styles.css). Two levels
+// resolve the common pairwise clash; dense pile-ups may still overlap and
+// resolve on zoom-in.
+function staggerWhiskerLabels(container: HTMLElement): void {
+  const whiskers = [...container.querySelectorAll<HTMLElement>(".vis-item.vis-range.tlp-whisker")]
+    .map((item) => ({ item, content: item.querySelector<HTMLElement>(".vis-item-content") }))
+    .filter((w): w is { item: HTMLElement; content: HTMLElement } => w.content !== null)
+    .sort((a, b) => a.item.getBoundingClientRect().left - b.item.getBoundingClientRect().left);
+  // Obstacles a label must dodge: box/point items (laid out by vis, can't
+  // move) and every whisker bracket. Whisker labels themselves are added as
+  // they are placed, left to right.
+  const placed: DOMRect[] = [
+    ...container.querySelectorAll(".vis-item.vis-box, .vis-item.vis-point"),
+    ...whiskers.map((w) => w.item),
+  ].map((el) => el.getBoundingClientRect());
+  const overlapArea = (a: DOMRect, b: DOMRect) =>
+    Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) *
+    Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+  const totalOverlap = (r: DOMRect) => placed.reduce((sum, p) => sum + overlapArea(p, r), 0);
+  // Candidate slots per label: above the bracket, below it, then further
+  // out in whole label-heights. First collision-free slot wins; if none is
+  // free, least total overlap wins.
+  const LABEL_H = 15;
+  const SLOTS: Array<{ below: boolean; shift: number }> = [
+    { below: false, shift: 0 },
+    { below: true, shift: 0 },
+    { below: true, shift: LABEL_H },
+    { below: false, shift: -LABEL_H },
+    { below: true, shift: 2 * LABEL_H },
+  ];
+  for (const { item, content } of whiskers) {
+    let best: { rect: DOMRect; below: boolean; shift: number; overlap: number } | null = null;
+    for (const slot of SLOTS) {
+      item.classList.toggle("tlp-whisker-below", slot.below);
+      content.style.setProperty("--tlp-label-shift", `${slot.shift}px`);
+      const rect = content.getBoundingClientRect();
+      const overlap = totalOverlap(rect);
+      if (best === null || overlap < best.overlap) best = { rect, below: slot.below, shift: slot.shift, overlap };
+      if (overlap === 0) break;
+    }
+    item.classList.toggle("tlp-whisker-below", best!.below);
+    content.style.setProperty("--tlp-label-shift", `${best!.shift}px`);
+    placed.push(best!.rect);
+  }
 }
 
 export function mountTimeline(
