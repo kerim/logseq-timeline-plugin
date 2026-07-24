@@ -1,6 +1,6 @@
 {
   "name": "logseq-timeline-plugin",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Historical timelines from #tl-tagged nodes (Logseq DB graphs only)",
   "main": "dist/index.html",
   "scripts": {
@@ -22,5 +22,11 @@
     "typescript": "^5.6.0",
     "vite": "^5.4.0",
     "vitest": "^2.1.0"
+  },
+  "license": "MIT",
+  "author": "P. Kerim Friedman",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kerim/logseq-timeline-plugin.git"
   }
 }
