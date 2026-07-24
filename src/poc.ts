@@ -2,9 +2,11 @@ import { renderChronos } from "chronos-timeline-md";
 
 export async function runProbe(out: HTMLElement) {
   const log = (label: string, v: unknown) => {
-    out.insertAdjacentHTML("beforeend", `<h4>${label}</h4><pre>${
-      typeof v === "string" ? v : JSON.stringify(v, null, 2)
-    }</pre>`);
+    const h = document.createElement("h4");
+    h.textContent = label;
+    const pre = document.createElement("pre");
+    pre.textContent = typeof v === "string" ? v : JSON.stringify(v, null, 2);
+    out.append(h, pre);
     console.log("[tlp-poc]", label, v);
   };
 
