@@ -28,9 +28,27 @@ Evidence (ident discovery rows, verbatim):
 ## (d) BCE axis rendering — RESOLVED ✓
 Readable: BCE point sits at −0500; axis ticks `-0500, 0000, 0500, 1000, 1500`. Astronomical year 0000 appears (known vis-timeline quirk) — cosmetic, acceptable for v1.
 
-## (c) Navigation (pushState / sidebar with uuid) — PENDING round 2
-Round-1 buttons received `undefined` uuids (key-shape bug), so navigation is unverified. Round 2: buttons will carry real uuid/title; user reports whether `logseq.App.pushState("page", {name: uuid})` opens block nodes and whether `openInRightSidebar(uuid)` works.
+## (c) Navigation (pushState / sidebar with uuid) — RESOLVED ✓ (round 2)
+User confirmed: `logseq.App.pushState("page", {name: uuid})` opens the right node, and `logseq.Editor.openInRightSidebar(uuid)` works. Task 8 code stands as planned.
 
-## Round-2 open items
-1. Node-query result: exact key for user-property values in nested pulls (expected: bare ident segment like `tl-date-yA0s4uuH`), value shapes for tl-topic (array vs object) and tl-type (choice → object with `title`?).
-2. Navigation verification (c).
+## (a2) Node-query result shape — RESOLVED ✓ (round 2, verbatim evidence)
+Mixed key convention:
+- **Built-in attrs → bare keys:** `title`, `uuid` (plus bonus `content`, `full-title`).
+- **User-property attrs → FULL ident WITH leading colon as key:** `":user.property/tl-date-yA0s4uuH"`.
+
+Value shapes:
+- `tl-topic` (Node, many): **array** of `{ "title": "...", "uuid": "...", "content": "...", "full-title": "..." }` — array even with a single value. Bare keys inside.
+- `tl-type` (choice): object `{ "title": "event" }`. Bare key.
+- `tl-date` (Text): plain string (post-fix; see hazard below).
+
+**Task 6 impact:**
+- Key helper must be three-way: `o[key] ?? o[key.split("/").pop()!] ?? o[":" + key]` — bare-segment fallback hits built-ins (`uuid`, `title`, `ident`), colon fallback hits property idents. Applies to `schema.ts` AND `query.ts`.
+- Test fixture must mirror the verbatim shapes above.
+
+## HAZARD (observed live): tl-date created as Date-type property
+The user initially created `tl-date` as a **Date** property; values then come back as entity refs — `{"id": 220}` — not strings (Date props store refs to journal pages). First real user hit this within minutes → it WILL happen again.
+- **Task 6:** `normalizeRow` must guard: `date: typeof rawDate === "string" ? rawDate : null` (non-string → null → partitioned to needs-attention rather than crashing or garbling).
+- **Task 10 (README) + onboarding screen:** state emphatically that `tl-date` must be type **Text**, not Date.
+
+## Cosmetic (accepted for v1)
+One BCE label rendered as `0500` instead of `-0500` in the user's post-fix run (vis-timeline BCE-label quirk family, alongside the year-0000 tick). User accepted for v1; candidate for a custom axis `format` later.
