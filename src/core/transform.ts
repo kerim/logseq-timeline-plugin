@@ -18,7 +18,9 @@ export function buildChronosSource(
     const date = n.date!.trim();
     const isRange = date.includes("~");
     const prefix = erasAsBackground && n.type === "era" && isRange ? "@" : "-";
-    lines.push(`${prefix} [${date}] ${escapeTitle(n.title)}`);
+    const escaped = escapeTitle(n.title);
+    const title = escaped.trim() === "" ? "(untitled)" : escaped; // matches attention.ts's convention
+    lines.push(`${prefix} [${date}] ${title}`);
     uuidByIndex.push(n.uuid);
   }
   return { source: lines.join("\n"), uuidByIndex };

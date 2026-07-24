@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyFilters } from "../src/core/filter";
+import { applyFilters, sanitizeFilters } from "../src/core/filter";
 import type { Filters, TimelineNode } from "../src/types";
 
 const n = (uuid: string, topics: string[], type: TimelineNode["type"]): TimelineNode => ({
@@ -33,5 +33,31 @@ describe("applyFilters", () => {
   it("typed filter excludes null-type nodes", () => {
     const untyped = n("untyped", ["Japan"], null);
     expect(applyFilters([untyped], f({ types: ["event"] }))).toEqual([]);
+  });
+});
+
+describe("sanitizeFilters", () => {
+  it("clamps a garbage object to safe defaults", () => {
+    const garbage = { topicMode: "<img>", topics: "x", types: [1, "era"], erasAsBackground: "yes" };
+    expect(sanitizeFilters(garbage)).toEqual({
+      topics: [],
+      topicMode: "OR",
+      types: ["era"],
+      erasAsBackground: true,
+    });
+  });
+
+  it("undefined falls back to defaults", () => {
+    expect(sanitizeFilters(undefined)).toEqual({
+      topics: [],
+      topicMode: "OR",
+      types: [],
+      erasAsBackground: true,
+    });
+  });
+
+  it("preserves a valid filters object round-trip", () => {
+    const valid: Filters = { topics: ["Japan", "Taiwan"], topicMode: "AND", types: ["event"], erasAsBackground: false };
+    expect(sanitizeFilters(valid)).toEqual(valid);
   });
 });

@@ -45,4 +45,10 @@ describe("buildChronosSource", () => {
     const { source } = buildChronosSource([n({ date: "1820~1890", type: "person" })], true);
     expect(source).toContain("- [1820~1890]");
   });
+
+  it("untitled node falls back to (untitled)", () => {
+    const { source } = buildChronosSource([n({ title: "" })], true);
+    const line = source.split("\n")[1];
+    expect(line.endsWith("] (untitled)")).toBe(true);
+  });
 });

@@ -1,5 +1,5 @@
-import { DEFAULT_FILTERS, SETTINGS_KEY } from "../constants";
-import { applyFilters } from "../core/filter";
+import { SETTINGS_KEY } from "../constants";
+import { applyFilters, sanitizeFilters } from "../core/filter";
 import { buildChronosSource } from "../core/transform";
 import { partitionNodes } from "../core/validate";
 import { getPreviewText, openInSidebar, openNode } from "../logseq/navigate";
@@ -14,8 +14,7 @@ import { mountTimeline } from "./timeline";
 let mounted: { destroy(): void } | null = null;
 
 function loadFilters(): Filters {
-  const saved = (logseq.settings?.[SETTINGS_KEY] ?? {}) as Partial<Filters>;
-  return { ...DEFAULT_FILTERS, ...saved };
+  return sanitizeFilters(logseq.settings?.[SETTINGS_KEY]);
 }
 function saveFilters(f: Filters): void {
   logseq.updateSettings({ [SETTINGS_KEY]: f });
@@ -125,21 +124,32 @@ export async function initApp(root: HTMLElement): Promise<void> {
       ));
       return;
     }
-    const build = buildChronosSource(visible, filters.erasAsBackground);
-    const result = mountTimeline(canvas, build, {
-      onOpen: (uuid, sidebar) => (sidebar ? openInSidebar(uuid) : openNode(uuid)),
-      onHover: async (uuid) => {
-        const tip = root.querySelector<HTMLElement>("#tlp-tooltip")!;
-        if (!uuid) { tip.hidden = true; return; }
-        const text = await getPreviewText(uuid);
-        if (text) { tip.textContent = text; tip.hidden = false; }
-      },
-    });
-    if ("error" in result) {
+    try {
+      const build = buildChronosSource(visible, filters.erasAsBackground);
+      const result = mountTimeline(canvas, build, {
+        onOpen: (uuid, sidebar) => (sidebar ? openInSidebar(uuid) : openNode(uuid)),
+        onHover: async (uuid) => {
+          const tip = root.querySelector<HTMLElement>("#tlp-tooltip")!;
+          if (!uuid) { tip.hidden = true; return; }
+          const text = await getPreviewText(uuid);
+          if (text) { tip.textContent = text; tip.hidden = false; }
+        },
+      });
+      if ("error" in result) {
+        canvas.innerHTML = "";
+        canvas.append(messageEl(result.error));
+      } else {
+        mounted = result;
+      }
+    } catch (e) {
+      // The chronos parser throws (rather than returning an error) on some
+      // inputs that pass our own regex — e.g. reversed ranges (1945~1895),
+      // invalid month/day (1874-13), or out-of-bounds years. Surface it
+      // instead of letting the exception blank the canvas silently.
       canvas.innerHTML = "";
-      canvas.append(messageEl(result.error));
-    } else {
-      mounted = result;
+      canvas.append(messageEl(
+        `Timeline rendering failed: ${String(e)}. Check the tl-date values of recently edited entries.`,
+      ));
     }
   };
 
