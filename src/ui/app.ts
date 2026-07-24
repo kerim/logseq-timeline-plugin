@@ -13,6 +13,11 @@ import { mountTimeline } from "./timeline";
 
 let mounted: { destroy(): void } | null = null;
 
+// Bumped once per initApp() call so a slow, in-flight invocation (e.g. a
+// pending query from a stale refresh click) can tell it's been superseded
+// and bail instead of mounting into a canvas that's already been replaced.
+let initEpoch = 0;
+
 function loadFilters(): Filters {
   return sanitizeFilters(logseq.settings?.[SETTINGS_KEY]);
 }
@@ -53,6 +58,7 @@ function messageEl(text: string): HTMLElement {
 }
 
 export async function initApp(root: HTMLElement): Promise<void> {
+  const epoch = ++initEpoch;
   root.innerHTML = `<div class="tlp-panel">
     <header class="tlp-header">
       <span>Timeline</span>
@@ -76,12 +82,14 @@ export async function initApp(root: HTMLElement): Promise<void> {
     // coerce to the primitive to satisfy strict typechecking.
     isDb = Boolean(await logseq.App.checkCurrentIsDbGraph());
   } catch { /* keep true; query failure below still yields a clear error */ }
+  if (epoch !== initEpoch) return; // superseded by a newer initApp() call while awaiting
   if (isDb === false) {
     canvas.innerHTML = `<div class="tlp-message">This plugin supports <b>DB graphs only</b>.</div>`;
     return;
   }
 
   const schema = await discoverSchema();
+  if (epoch !== initEpoch) return; // superseded by a newer initApp() call while awaiting
   if (!schema) {
     canvas.innerHTML = ONBOARDING_HTML;
     const setupBtn = canvas.querySelector<HTMLButtonElement>("#tlp-setup")!;
@@ -105,16 +113,25 @@ export async function initApp(root: HTMLElement): Promise<void> {
   try {
     nodes = await fetchTimelineNodes(schema);
   } catch (e) {
+    if (epoch !== initEpoch) return; // superseded by a newer initApp() call while awaiting
     canvas.innerHTML = "";
     canvas.append(messageEl(`Query failed: ${String(e)}. Try ↻ refresh.`));
     return;
   }
+  if (epoch !== initEpoch) return; // superseded by a newer initApp() call while awaiting
 
   let filters = loadFilters();
   const { renderable, attention } = partitionNodes(nodes);
   renderAttention(root.querySelector<HTMLElement>("#tlp-attention")!, attention);
 
+  // Sequence counter for the async hover preview: bumped on every onHover
+  // call (including the null "pointer left" call). If the preview text
+  // resolves after the pointer has already moved on (or left and come back),
+  // its resolution is stale and must not clobber the current tooltip state.
+  let hoverSeq = 0;
+
   const rerender = () => {
+    if (epoch !== initEpoch) return; // stale init — canvas has already been replaced
     mounted?.destroy(); mounted = null;
     canvas.innerHTML = "";
     const visible = applyFilters(renderable, filters);
@@ -129,9 +146,11 @@ export async function initApp(root: HTMLElement): Promise<void> {
       const result = mountTimeline(canvas, build, {
         onOpen: (uuid, sidebar) => (sidebar ? openInSidebar(uuid) : openNode(uuid)),
         onHover: async (uuid) => {
+          const seq = ++hoverSeq;
           const tip = root.querySelector<HTMLElement>("#tlp-tooltip")!;
           if (!uuid) { tip.hidden = true; return; }
           const text = await getPreviewText(uuid);
+          if (seq !== hoverSeq) return; // pointer moved on (or off) before this resolved
           if (text) { tip.textContent = text; tip.hidden = false; }
         },
       });
@@ -145,10 +164,14 @@ export async function initApp(root: HTMLElement): Promise<void> {
       // The chronos parser throws (rather than returning an error) on some
       // inputs that pass our own regex — e.g. reversed ranges (1945~1895),
       // invalid month/day (1874-13), or out-of-bounds years. Surface it
-      // instead of letting the exception blank the canvas silently.
+      // instead of letting the exception blank the canvas silently. Its
+      // "Line N" counts lines in the generated chronos source, whose line 1
+      // is our invisible `> NOTODAY` flag — shift by one so it lines up with
+      // the entries the user actually sees.
+      const msg = String(e).replace(/Line (\d+)/g, (_, n) => `entry ${Number(n) - 1}`);
       canvas.innerHTML = "";
       canvas.append(messageEl(
-        `Timeline rendering failed: ${String(e)}. Check the tl-date values of recently edited entries.`,
+        `Timeline rendering failed: ${msg}. Check the tl-date values of recently edited entries.`,
       ));
     }
   };

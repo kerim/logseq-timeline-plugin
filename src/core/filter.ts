@@ -1,15 +1,22 @@
+import { DEFAULT_FILTERS } from "../constants";
 import type { Filters, TimelineNode } from "../types";
 
 // Persisted settings are unvalidated `unknown` at the plugin-storage boundary
 // and `topicMode` flows into an innerHTML template in filterBar — clamp
 // every field to its expected shape/type before it reaches app state.
+// Fallbacks come from DEFAULT_FILTERS (constants.ts) so there's one source
+// of truth for "what filters look like with nothing set".
 export function sanitizeFilters(raw: unknown): Filters {
   const r = (raw ?? {}) as Partial<Record<keyof Filters, unknown>>;
   return {
-    topics: Array.isArray(r.topics) ? r.topics.filter((t): t is string => typeof t === "string") : [],
-    topicMode: r.topicMode === "AND" ? "AND" : "OR",
-    types: Array.isArray(r.types) ? r.types.filter((t): t is string => typeof t === "string") : [],
-    erasAsBackground: typeof r.erasAsBackground === "boolean" ? r.erasAsBackground : true,
+    topics: Array.isArray(r.topics)
+      ? r.topics.filter((t): t is string => typeof t === "string")
+      : [...DEFAULT_FILTERS.topics],
+    topicMode: r.topicMode === "AND" ? "AND" : DEFAULT_FILTERS.topicMode,
+    types: Array.isArray(r.types)
+      ? r.types.filter((t): t is string => typeof t === "string")
+      : [...DEFAULT_FILTERS.types],
+    erasAsBackground: typeof r.erasAsBackground === "boolean" ? r.erasAsBackground : DEFAULT_FILTERS.erasAsBackground,
   };
 }
 

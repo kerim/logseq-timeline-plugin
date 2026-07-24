@@ -34,6 +34,13 @@ describe("applyFilters", () => {
     const untyped = n("untyped", ["Japan"], null);
     expect(applyFilters([untyped], f({ types: ["event"] }))).toEqual([]);
   });
+  it("empty-topics node is excluded when a topic filter is selected (OR mode)", () => {
+    const untagged = n("untagged", [], "event");
+    expect(applyFilters([untagged], f({ topics: ["Japan"] }))).toEqual([]);
+  });
+  it("multi-value type filter matches the union of both types", () => {
+    expect(applyFilters(all, f({ types: ["event", "era"] }))).toEqual(all);
+  });
 });
 
 describe("sanitizeFilters", () => {

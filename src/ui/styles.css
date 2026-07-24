@@ -3,7 +3,6 @@ html[data-theme="dark"] { --tlp-bg: #1f1f1f; --tlp-fg: #ddd; --tlp-border: #444;
 html, body { margin: 0; height: 100%; }
 .tlp-panel { display: flex; flex-direction: column; height: 100vh; background: var(--tlp-bg); color: var(--tlp-fg); font-family: sans-serif; }
 .tlp-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--tlp-border); }
-#tlp-body { flex: 1; overflow: auto; padding: 12px; }
 
 #tlp-filters { display: flex; gap: 10px; align-items: center; flex: 1; margin: 0 16px; font-size: 13px; }
 .tlp-topic-list { position: absolute; background: var(--tlp-bg); border: 1px solid var(--tlp-border);
