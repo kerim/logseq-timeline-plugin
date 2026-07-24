@@ -1,6 +1,6 @@
 {
   "name": "logseq-timeline-plugin",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Historical timelines from #tl-tagged nodes (Logseq DB graphs only)",
   "main": "dist/index.html",
   "scripts": {

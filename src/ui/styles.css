@@ -53,7 +53,11 @@ html, body { margin: 0; height: 100%; }
   white-space: nowrap;
   overflow: visible;
   padding: 0 2px 2px;
-  color: var(--tlp-fg); /* item text is white-on-accent by default; whiskers sit on the bare canvas */
+  /* The chronos canvas paints its own light background regardless of app
+     theme, so theme-fg text can end up light-on-light in dark mode. Use the
+     item's own accent (same as the bracket) — readable on the canvas in
+     either app theme, and visually tied to its whisker. */
+  color: var(--tlp-whisker-color, var(--tlp-fg));
   font-size: 12px;
   z-index: 6; /* above normal range/box items (5), below points (10) */
 }
