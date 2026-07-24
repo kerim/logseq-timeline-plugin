@@ -39,16 +39,16 @@ Mixed key convention:
 Value shapes:
 - `tl-topic` (Node, many): **array** of `{ "title": "...", "uuid": "...", "content": "...", "full-title": "..." }` — array even with a single value. Bare keys inside.
 - `tl-type` (choice): object `{ "title": "event" }`. Bare key.
-- `tl-date` (Text): plain string (post-fix; see hazard below).
+- `tl-date` (Text/`:default`): **ref to a value entity** — `{"id": N}` under a plain pull. CLI-verified against the live graph: the property's `:db/valueType` is `db.type/ref` with `:logseq.property/type` `default` — in DB graphs, even Text values live on hidden value-entities whose `:block/title` holds the text (`"1874-05-22"`, `"1895~1945"`, `"-500"`). **Task 6 must pull `tl-date` NESTED** — `{ident [:block/title]}` — and read the title, same as tl-topic/tl-type.
 
 **Task 6 impact:**
 - Key helper must be three-way: `o[key] ?? o[key.split("/").pop()!] ?? o[":" + key]` — bare-segment fallback hits built-ins (`uuid`, `title`, `ident`), colon fallback hits property idents. Applies to `schema.ts` AND `query.ts`.
 - Test fixture must mirror the verbatim shapes above.
 
-## HAZARD (observed live): tl-date created as Date-type property
-The user initially created `tl-date` as a **Date** property; values then come back as entity refs — `{"id": 220}` — not strings (Date props store refs to journal pages). First real user hit this within minutes → it WILL happen again.
-- **Task 6:** `normalizeRow` must guard: `date: typeof rawDate === "string" ? rawDate : null` (non-string → null → partitioned to needs-attention rather than crashing or garbling).
-- **Task 10 (README) + onboarding screen:** state emphatically that `tl-date` must be type **Text**, not Date.
+## CORRECTION (2026-07-24, CLI-verified): the `{"id": 220}` ref was NOT a Date-type artifact
+Earlier drafts of these findings blamed the ref-shaped `tl-date` value on the property having been created as Date-type. Wrong: the user's screenshot showed the property is Text, and direct CLI queries confirmed Text (`:default`) properties are `db.type/ref` too. The refs are normal. Design consequences:
+- **Task 6:** pull `tl-date` nested (`{ident [:block/title]}`); extraction must tolerate three shapes: string (defensive, if some type is scalar), object-with-title (normal), anything else → `null` → needs-attention.
+- **Date-type mistake is still worth guarding:** a Date-typed `tl-date` refs a journal page, so the nested pull yields a title like `"May 22nd, 1874"` — which fails `TL_DATE_RE` and lands in needs-attention with the value visible. Graceful, no crash. README/onboarding still say: type **Text**.
 
 ## Cosmetic (accepted for v1)
 One BCE label rendered as `0500` instead of `-0500` in the user's post-fix run (vis-timeline BCE-label quirk family, alongside the year-0000 tick). User accepted for v1; candidate for a custom axis `format` later.
