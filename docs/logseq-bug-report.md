@@ -1,4 +1,6 @@
-# Bug report for logseq/logseq
+# Bug report — file at: https://github.com/logseq/db-test/issues/new
+
+(No duplicates found as of 2026-07-24; searched db-test issues for: addPropertyValueChoices, closed value, property choices plugin, dropdown choices, upsert closed.)
 
 **Title:** `addPropertyValueChoices` plugin API silently fails: worker-side assert requires cljs uuids that JS callers cannot supply
 
