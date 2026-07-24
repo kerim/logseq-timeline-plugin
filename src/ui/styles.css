@@ -16,3 +16,42 @@ html, body { margin: 0; height: 100%; }
   font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,.25); z-index: 30; }
 /* chronos theme mapping */
 :root { --chronos-bg-primary: var(--tlp-bg); --chronos-text-normal: var(--tlp-fg); }
+
+/* Adaptive range-item rendering: a range bar whose label doesn't fit its
+   width switches to a "whisker" — |————| span indicator with the label
+   floated above, unclipped. The `.tlp-whisker` class is toggled by
+   src/ui/timeline.ts based on measured label width vs. bar width; the
+   `--tlp-whisker-color` custom property is set inline per item to the bar's
+   own current accent/border color. Era washes (.vis-background) and
+   point/box items are untouched — this only ever targets .vis-range. */
+#tlp-canvas .vis-item.vis-range.tlp-whisker {
+  background-color: transparent !important;
+  border-style: solid;
+  border-width: 0 2px; /* the two vertical end caps, via the item's own left/right border */
+  border-color: var(--tlp-whisker-color, currentColor) !important;
+}
+#tlp-canvas .vis-item.vis-range.tlp-whisker::before {
+  /* the horizontal line through the vertical middle */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  background-color: var(--tlp-whisker-color, currentColor);
+  pointer-events: none;
+}
+#tlp-canvas .vis-item.vis-range.tlp-whisker .vis-item-overflow {
+  overflow: visible; /* let the label escape the bar's own box */
+}
+#tlp-canvas .vis-item.vis-range.tlp-whisker .vis-item-content {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  overflow: visible;
+  padding: 0 2px 2px;
+  z-index: 6; /* above normal range/box items (5), below points (10) */
+}
