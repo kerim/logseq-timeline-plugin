@@ -4,3 +4,15 @@ html, body { margin: 0; height: 100%; }
 .tlp-panel { display: flex; flex-direction: column; height: 100vh; background: var(--tlp-bg); color: var(--tlp-fg); font-family: sans-serif; }
 .tlp-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--tlp-border); }
 #tlp-body { flex: 1; overflow: auto; padding: 12px; }
+
+#tlp-filters { display: flex; gap: 10px; align-items: center; flex: 1; margin: 0 16px; font-size: 13px; }
+.tlp-topic-list { position: absolute; background: var(--tlp-bg); border: 1px solid var(--tlp-border);
+  padding: 8px; max-height: 50vh; overflow: auto; display: flex; flex-direction: column; z-index: 20; }
+#tlp-canvas { flex: 1; min-height: 0; }
+.tlp-message { padding: 24px; max-width: 48em; }
+.tlp-attention { padding: 4px 12px; border-bottom: 1px solid var(--tlp-border); font-size: 13px; }
+.tlp-tooltip { position: fixed; bottom: 16px; left: 16px; max-width: 40em; background: var(--tlp-bg);
+  color: var(--tlp-fg); border: 1px solid var(--tlp-border); border-radius: 6px; padding: 8px 10px;
+  font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,.25); z-index: 30; }
+/* chronos theme mapping */
+:root { --chronos-bg-primary: var(--tlp-bg); --chronos-text-normal: var(--tlp-fg); }
