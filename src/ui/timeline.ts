@@ -58,7 +58,7 @@ function staggerWhiskerLabels(container: HTMLElement): void {
   // move) and every whisker bracket. Whisker labels themselves are added as
   // they are placed, left to right.
   const placed: DOMRect[] = [
-    ...container.querySelectorAll(".vis-item.vis-box, .vis-item.vis-point"),
+    ...container.querySelectorAll(".vis-item.vis-box, .vis-item.vis-point, .vis-item.vis-range:not(.tlp-whisker)"),
     ...whiskers.map((w) => w.item),
   ].map((el) => el.getBoundingClientRect());
   const overlapArea = (a: DOMRect, b: DOMRect) =>

@@ -21,7 +21,7 @@ const nodeRows = [
   }],
   [{
     title: "Japanese colonial period", uuid: "node-colonial", content: "Japanese colonial period", "full-title": "Japanese colonial period",
-    ":user.property/tl-date-x1": { title: "1895~1945" },
+    ":user.property/tl-date-x1": { title: "1600~1945" },
     ":user.property/tl-topic-x2": [topicTaiwan, topicJapan],
     ":user.property/tl-type-x3": { title: "era" },
   }],
@@ -37,7 +37,7 @@ const nodeRows = [
   }],
   [{
     title: "Meiji era", uuid: "node-meiji", content: "Meiji era", "full-title": "Meiji era",
-    ":user.property/tl-date-x1": { title: "1820~1840" },
+    ":user.property/tl-date-x1": { title: "1550~1555" },
     ":user.property/tl-topic-x2": [topicJapan],
     ":user.property/tl-type-x3": { title: "era" },
   }],
