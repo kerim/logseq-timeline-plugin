@@ -29,6 +29,7 @@ html, body { margin: 0; height: 100%; }
   border-style: solid;
   border-width: 0 2px; /* the two vertical end caps, via the item's own left/right border */
   border-color: var(--tlp-whisker-color, currentColor) !important;
+  height: 12px !important; /* content is absolutely positioned, so the item would otherwise collapse and hide the caps */
 }
 #tlp-canvas .vis-item.vis-range.tlp-whisker::before {
   /* the horizontal line through the vertical middle */
@@ -47,11 +48,12 @@ html, body { margin: 0; height: 100%; }
 }
 #tlp-canvas .vis-item.vis-range.tlp-whisker .vis-item-content {
   position: absolute;
-  left: 50%;
+  left: 0; /* label starts at the left cap, like event labels start at their anchor */
   bottom: 100%;
-  transform: translateX(-50%);
   white-space: nowrap;
   overflow: visible;
   padding: 0 2px 2px;
+  color: var(--tlp-fg); /* item text is white-on-accent by default; whiskers sit on the bare canvas */
+  font-size: 12px;
   z-index: 6; /* above normal range/box items (5), below points (10) */
 }
