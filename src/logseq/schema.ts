@@ -14,9 +14,13 @@ const k = (o: Record<string, unknown>, key: string): unknown =>
   o[key] ?? o[key.split("/").pop()!] ?? o[":" + key];
 
 export async function discoverSchema(): Promise<PropSchema | null> {
+  // Plugin-created properties (via logseq.Editor.upsertProperty, see
+  // ./setup.ts) may land in a "plugin.property.*" namespace instead of
+  // "user.property" — accept either.
   const rows: unknown[][] = (await logseq.DB.datascriptQuery(`
     [:find (pull ?p [:db/ident :block/title])
-     :where [?p :db/ident ?i] [(namespace ?i) ?ns] [(= ?ns "user.property")]]`)) ?? [];
+     :where [?p :db/ident ?i] [(namespace ?i) ?ns]
+     (or [(= ?ns "user.property")] [(clojure.string/starts-with? ?ns "plugin.property")])]`)) ?? [];
   const props = rows.map((r) => r[0] as Record<string, unknown>);
   const identFor = (title: string): string | undefined => {
     const hit = props.find((p) => k(p, "block/title") === title);

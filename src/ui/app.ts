@@ -5,6 +5,7 @@ import { partitionNodes } from "../core/validate";
 import { getPreviewText, openInSidebar, openNode } from "../logseq/navigate";
 import { fetchTimelineNodes } from "../logseq/query";
 import { discoverSchema } from "../logseq/schema";
+import { setupSchema } from "../logseq/setup";
 import type { Filters, TimelineNode } from "../types";
 import { renderAttention } from "./attention";
 import { renderFilterBar } from "./filterBar";
@@ -20,9 +21,15 @@ function saveFilters(f: Filters): void {
   logseq.updateSettings({ [SETTINGS_KEY]: f });
 }
 
-// Static chrome only — no graph content anywhere in this block.
+// Static chrome only — no graph content anywhere in this block. The button
+// and error slot below are wired up in initApp() after this is assigned to
+// canvas.innerHTML; any graph/exception content that ends up in the error
+// slot goes in via messageEl()'s textContent pattern, never innerHTML.
 const ONBOARDING_HTML = `<div class="tlp-message"><h3>Timeline setup needed</h3>
-  <p>This graph is missing the <code>#tl</code> schema. One-time setup (~1 minute):</p>
+  <p>This graph is missing the <code>#tl</code> schema.</p>
+  <p><button id="tlp-setup" class="tlp-primary">Create the schema for me</button></p>
+  <div id="tlp-setup-error"></div>
+  <p>or set it up manually (~1 minute):</p>
   <ol>
     <li>Create a tag named <code>tl</code> (type <code>#tl</code> in any block).</li>
     <li>On the <code>tl</code> tag page, add three tag properties:
@@ -75,7 +82,24 @@ export async function initApp(root: HTMLElement): Promise<void> {
   }
 
   const schema = await discoverSchema();
-  if (!schema) { canvas.innerHTML = ONBOARDING_HTML; return; }
+  if (!schema) {
+    canvas.innerHTML = ONBOARDING_HTML;
+    const setupBtn = canvas.querySelector<HTMLButtonElement>("#tlp-setup")!;
+    const setupError = canvas.querySelector<HTMLElement>("#tlp-setup-error")!;
+    setupBtn.addEventListener("click", async () => {
+      setupBtn.disabled = true;
+      setupError.innerHTML = "";
+      try {
+        await setupSchema();
+        await initApp(root); // success — re-run the full init, which re-discovers the schema
+      } catch (e) {
+        setupError.innerHTML = "";
+        setupError.append(messageEl(`Setup failed: ${String(e)}`));
+        setupBtn.disabled = false;
+      }
+    });
+    return;
+  }
 
   let nodes: TimelineNode[] = [];
   try {
