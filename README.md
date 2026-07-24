@@ -50,7 +50,7 @@ The node's own title becomes its label on the timeline.
 | `-500` | 500 BCE (negative year) |
 | `1874-05-22T14:30` | Any of the above with an optional time |
 
-Supported range: years ±271,820 (the underlying renderer's date bounds).
+Supported range: 271,821 BCE to 275,761 CE (the underlying renderer's date bounds).
 
 ## The panel
 
@@ -80,10 +80,10 @@ Any `#tl` node with a missing or unparseable `tl-date` is listed above the canva
 
 ## Known limitations
 
-- The timeline canvas always renders with a light background, even when Logseq is in dark mode — this is a theming gap in the underlying renderer. Text color is adapted for readability, but the canvas fill itself does not yet follow the app theme. Fixing this is planned.
+- The timeline canvas always renders with a light background, even when Logseq is in dark mode — a known gap in the bundled renderer's theming. Text color is adapted for readability, but the canvas fill itself does not yet follow the app theme.
 - BCE axis labels can render without their minus sign at some zoom levels (a cosmetic quirk in the underlying renderer).
 - `tl-type` dropdown choices can't be preset by the plugin — see [Setup](#optional-a-dropdown-for-tl-type) above and the filed bug report.
-- Dates are limited to years ±271,820 (the renderer's underlying date bounds).
+- Dates are limited to 271,821 BCE to 275,761 CE (the renderer's underlying date bounds).
 
 ## Development
 
@@ -107,7 +107,7 @@ Then serve `dist-harness/` with any static file server and open it in a browser.
 
 This plugin (MIT) is built on:
 
-- [`chronos-timeline-md`](https://www.npmjs.com/package/chronos-timeline-md) (ISC) — the extracted rendering core of [Chronos Timeline](https://github.com/clairefro/obsidian-chronos-timeline), an Obsidian plugin by Claire Froelich (MIT).
+- [`chronos-timeline-md`](https://www.npmjs.com/package/chronos-timeline-md) (ISC) — the extracted rendering core of [Chronos Timeline](https://github.com/clairefro/obsidian-plugin-chronos), an Obsidian plugin by Claire Froelich (MIT).
 - [`vis-timeline`](https://github.com/visjs/vis-timeline) (Apache-2.0 / MIT dual-licensed).
 
 The `tl-date` syntax was influenced by [Markwhen](https://markwhen.com/)'s date syntax.
