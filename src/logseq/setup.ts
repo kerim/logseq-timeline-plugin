@@ -18,26 +18,57 @@ export async function setupSchema(): Promise<void> {
   // block in a temp page (creating the value entities), collect the value
   // entities' uuids by query, convert them, then delete the temp page.
   // Best-effort: any failure leaves a fully working schema, minus dropdown.
+  // lastStage is tracked so a failure names exactly where it happened —
+  // CLI-diagnosed: value entities WERE created correctly in a prior run, but
+  // the conversion call itself threw (see propId comment below).
+  const TEMP_PAGE = "tlp-setup-temp";
+  let lastStage: "seed" | "collect" | "convert" | "cleanup" = "seed";
   try {
-    const TEMP_PAGE = "tlp-setup-temp";
     await logseq.Editor.createPage(TEMP_PAGE, {}, { redirect: false, createFirstBlock: false });
+    let seeded = 0;
     for (const v of TYPE_CHOICES) {
       const b = await logseq.Editor.appendBlockInPage(TEMP_PAGE, `choice seed ${v}`);
-      if (b) await logseq.Editor.upsertBlockProperty(b.uuid, PROP_TYPE, v);
+      if (b) {
+        await logseq.Editor.upsertBlockProperty(b.uuid, PROP_TYPE, v);
+        seeded++;
+      }
     }
+    console.log(`[timeline] setup: seeded ${seeded} choice blocks`);
+
+    lastStage = "collect";
     // Collect the value entities' uuids via the property ident (plugin-created
     // idents are plugin-namespaced; discover by title like schema.ts does).
+    // Exclude empty-title values, which otherwise sneak into the result set.
     const rows: unknown[][] = (await logseq.DB.datascriptQuery(`
       [:find ?vuuid
        :where [?p :block/title "${PROP_TYPE}"] [?p :db/ident ?ident]
-              [?b ?ident ?v] [?v :block/uuid ?vuuid]]`)) ?? [];
+              [?b ?ident ?v] [?v :block/uuid ?vuuid]
+              [?v :block/title ?vt] [(not= ?vt "")]]`)) ?? [];
     const uuids = [...new Set(rows.map((r) => String(r[0])))];
+    console.log(`[timeline] setup: collected ${uuids.length} value uuids`);
+
+    lastStage = "convert";
     if (uuids.length > 0) {
-      await logseq.Editor.addPropertyValueChoices(typeProp.uuid ?? (typeProp as { id?: number }).id ?? PROP_TYPE, uuids);
+      // Logseq's own UI (src/main/frontend/components/property/config.cljs)
+      // calls addPropertyValueChoices with the property's numeric :db/id, not
+      // its uuid — despite the TS typing being BlockIdentity (string |
+      // {uuid}). Numeric id first, matching the real UI; uuid and the
+      // property name are fallbacks if upsertProperty didn't return an id.
+      const propId = (typeProp as { id?: number }).id ?? (typeProp as { uuid?: string }).uuid ?? PROP_TYPE;
+      await logseq.Editor.addPropertyValueChoices(propId as any, uuids); // eslint-disable-line @typescript-eslint/no-explicit-any -- BlockIdentity's declared type (string | {uuid}) doesn't include the numeric db/id Logseq's own UI actually passes
+      console.log("[timeline] setup: choices conversion OK");
+    } else {
+      console.warn("[timeline] setup: no value uuids collected, skipping choices conversion");
     }
+
+    lastStage = "cleanup";
     await logseq.Editor.deletePage(TEMP_PAGE);
   } catch (e) {
-    console.warn("[timeline] preset tl-type choices failed (add manually if wanted):", e);
-    try { await logseq.Editor.deletePage("tlp-setup-temp"); } catch { /* already gone */ }
+    console.warn("[timeline] choices step failed at:", lastStage, e);
+    try {
+      await logseq.Editor.deletePage(TEMP_PAGE);
+    } catch (cleanupErr) {
+      console.warn("[timeline] choices step: temp page cleanup also failed:", cleanupErr);
+    }
   }
 }
