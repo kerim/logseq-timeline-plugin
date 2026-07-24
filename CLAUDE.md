@@ -1,6 +1,6 @@
 # logseq-timeline-plugin — project instructions
 
-Logseq DB-graph plugin rendering historical timelines from `#tl`-tagged nodes. TypeScript + Vite + `@logseq/libs` + `chronos-timeline-md`. Wiki page: `projects/logseq-timeline-plugin` (has a concepts page and the task list).
+Logseq DB-graph plugin rendering historical timelines from `#tl`-tagged nodes. TypeScript + Vite + `@logseq/libs` + `chronos-timeline-md`. Wiki page: `projects/logseq-timeline-plugin` (has a concepts page and the task list). Public repo: <https://github.com/kerim/logseq-timeline-plugin> (HTTPS origin; push after each landed change). Note: the GitHub MCP token cannot create repos (403) — repo creation/admin goes through `gh`, per the global rule.
 
 ## Skills to load at session start
 
