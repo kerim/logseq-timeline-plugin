@@ -1,0 +1,26 @@
+{
+  "name": "logseq-timeline-plugin",
+  "version": "0.0.1",
+  "description": "Historical timelines from #tl-tagged nodes (Logseq DB graphs only)",
+  "main": "dist/index.html",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run"
+  },
+  "logseq": {
+    "id": "logseq-timeline-plugin",
+    "title": "Timeline",
+    "icon": "./icon.svg",
+    "main": "dist/index.html"
+  },
+  "dependencies": {
+    "@logseq/libs": "^0.3.1",
+    "chronos-timeline-md": "^1.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vite": "^5.4.0",
+    "vitest": "^2.1.0"
+  }
+}
