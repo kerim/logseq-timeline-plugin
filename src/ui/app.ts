@@ -29,6 +29,7 @@ const ONBOARDING_HTML = `<div class="tlp-message"><h3>Timeline setup needed</h3>
   <p>This graph is missing the <code>#tl</code> schema.</p>
   <p><button id="tlp-setup" class="tlp-primary">Create the schema for me</button></p>
   <div id="tlp-setup-error"></div>
+  <p>Optional: for a dropdown on <code>tl-type</code>, open the property's settings and add choices <code>event</code>, <code>era</code>, <code>person</code> (once per graph, ~30 seconds). Entries typed without the dropdown work identically.</p>
   <p>or set it up manually (~1 minute):</p>
   <ol>
     <li>Create a tag named <code>tl</code> (type <code>#tl</code> in any block).</li>
