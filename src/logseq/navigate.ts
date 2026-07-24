@@ -5,6 +5,9 @@ export function openNode(uuid: string): void {
 }
 
 export function openInSidebar(uuid: string): void {
+  // Close the full-screen panel first — otherwise the sidebar opens behind
+  // it and is invisible to the user (same pattern as openNode).
+  logseq.hideMainUI();
   logseq.Editor.openInRightSidebar(uuid);
 }
 

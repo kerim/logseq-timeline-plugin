@@ -19,11 +19,15 @@ function main() {
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><circle cx="7" cy="12" r="2" fill="currentColor"/><circle cx="15" cy="12" r="2" fill="currentColor"/></svg>
     </a>`,
   });
-  // Logseq's app header is full-width, 48px tall, z-index 10, and clickable.
-  // zIndex: 11 loses to it on the desktop build, making the panel's top
-  // strip (filter bar) unclickable — verified via browser-harness + live
-  // web-Logseq inspection. Raise well above it.
-  logseq.setMainUIInlineStyle({ zIndex: 9999 });
+  // Electron desktop Logseq has a -webkit-app-region: drag strip across the
+  // top ~48px of the window. Drag regions are OS-level rectangles that punch
+  // through overlays regardless of z-index, so no z-index value fixes a panel
+  // that starts at top: 0 — the panel must be positioned below the strip
+  // entirely. (Root-caused via browser-harness + live desktop-Logseq
+  // inspection: the ✕ close button only ever worked because it happened to
+  // sit under the header's own no-drag button island.) The panel's internal
+  // 100vh layout needs no change — it's relative to this iframe's own box.
+  logseq.setMainUIInlineStyle({ zIndex: 9999, top: "48px", height: "calc(100vh - 48px)" });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") logseq.hideMainUI(); });
   void syncTheme();
   logseq.App.onThemeModeChanged(({ mode }) => {
