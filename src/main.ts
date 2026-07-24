@@ -24,8 +24,18 @@ function main() {
   app.innerHTML = `<div class="tlp-panel"><header class="tlp-header">
       <span>Timeline</span>
       <button id="tlp-close" title="Close">✕</button>
-    </header><main id="tlp-body">Scaffold OK</main></div>`;
+    </header><main id="tlp-body"></main></div>`;
   document.getElementById("tlp-close")!.addEventListener("click", () => logseq.hideMainUI());
+
+  const body = document.getElementById("tlp-body")!;
+  const probeBtn = document.createElement("button");
+  probeBtn.textContent = "Run POC probe";
+  probeBtn.onclick = async () => {
+    body.innerHTML = "";
+    const { runProbe } = await import("./poc");
+    await runProbe(body);
+  };
+  body.append(probeBtn);
 }
 
 logseq.ready(main).catch(console.error);
