@@ -2,7 +2,7 @@
 
 Turn `#tl`-tagged nodes in your Logseq graph into an interactive, zoomable historical timeline. Tag any block or page, give it a date, link it to topics, and it shows up on a timeline you can filter, pan, and zoom — click an item to jump straight back to the node it came from.
 
-<!-- TODO: screenshot -->
+![The timeline panel showing eleventh- to thirteenth-century entries: the Middle Ages, Islamic Golden Age, Song dynasty and Mongol Empire as background washes with their labels stacked in separate lanes, Genghis Khan's lifespan as a whisker, and the Battle of Hastings and the sealing of Magna Carta as point events.](./docs/screenshot.png)
 
 ## DB graphs only
 
