@@ -14,7 +14,7 @@ permissions:
   contents: write
 
 env:
-  PLUGIN_NAME: logseq-timeline-plugin
+  PLUGIN_NAME: logseq-history-timeline-plugin
 
 jobs:
   build:
