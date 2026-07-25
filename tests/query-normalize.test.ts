@@ -59,6 +59,20 @@ describe("normalizeRow", () => {
     });
   });
 
+  it("tl-type is matched case- and whitespace-insensitively", () => {
+    // Logseq's property UI title-cases dropdown choices the user adds, so a
+    // graph can legitimately hold "Era"/"Person"/"Event" rather than lowercase.
+    const cases: [string, string][] = [
+      ["Era", "era"],
+      ["PERSON", "person"],
+      ["  Event  ", "event"],
+    ];
+    for (const [stored, expected] of cases) {
+      const row = [{ uuid: "u", title: "T", ":user.property/tl-type-x3": { title: stored } }];
+      expect(normalizeRow(row, schema).type).toBe(expected);
+    }
+  });
+
   it("tl-date as a bare scalar string is accepted defensively", () => {
     const row = [{
       uuid: "u4", title: "Z",

@@ -22,8 +22,12 @@ export function normalizeRow(row: unknown, schema: PropSchema): TimelineNode {
   const rawTopics = k(o, bare(schema.topic));
   const topics = rawTopics == null ? [] : (Array.isArray(rawTopics) ? rawTopics : [rawTopics]).map(ref);
 
+  // tl-type is matched case- and whitespace-insensitively. Users are told to
+  // add "event"/"era"/"person" as dropdown choices themselves, and Logseq's
+  // property UI capitalises what they type ("Era"), which would otherwise
+  // silently yield type=null and break the type filter + era-wash toggle.
   const rawType = k(o, bare(schema.type));
-  const typeTitle = rawType == null ? null : ref(rawType).title;
+  const typeTitle = rawType == null ? null : ref(rawType).title.trim().toLowerCase();
 
   // tl-date is ref-typed like everything else (Text/:default props store refs
   // to hidden value-entities; the value-entity's :block/title holds the

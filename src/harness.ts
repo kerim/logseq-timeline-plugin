@@ -41,6 +41,26 @@ const nodeRows = [
     ":user.property/tl-topic-x2": [topicJapan],
     ":user.property/tl-type-x3": { title: "era" },
   }],
+  // Overlapping long eras — reproduces the background-wash label clash
+  // (their labels all print at the band's top-left and pile up).
+  [{
+    title: "Middle Ages", uuid: "node-ma", content: "Middle Ages", "full-title": "Middle Ages",
+    ":user.property/tl-date-x1": { title: "0476~1500" },
+    ":user.property/tl-topic-x2": [topicPrehistory],
+    ":user.property/tl-type-x3": { title: "Era" },
+  }],
+  [{
+    title: "Islamic Golden Age", uuid: "node-iga", content: "Islamic Golden Age", "full-title": "Islamic Golden Age",
+    ":user.property/tl-date-x1": { title: "0750~1258" },
+    ":user.property/tl-topic-x2": [topicPrehistory],
+    ":user.property/tl-type-x3": { title: "Era" },
+  }],
+  [{
+    title: "Song dynasty", uuid: "node-song", content: "Song dynasty", "full-title": "Song dynasty",
+    ":user.property/tl-date-x1": { title: "0960~1279" },
+    ":user.property/tl-topic-x2": [topicPrehistory],
+    ":user.property/tl-type-x3": { title: "Era" },
+  }],
 ];
 
 let settingsStore: Record<string, unknown> = {};

@@ -8,6 +8,16 @@ Turn `#tl`-tagged nodes in your Logseq graph into an interactive, zoomable histo
 
 This plugin works **only on Logseq DB graphs** (the SQLite-backed database graphs, Logseq 0.11+). It does not support old-style file/markdown graphs, and has no plans to.
 
+## Try it with the demo graph
+
+If you'd rather see the plugin working before setting anything up, this repo ships a ready-made graph: [`demo/timeline-demo.sqlite`](./demo/timeline-demo.sqlite).
+
+1. Download the file.
+2. In Logseq, open the three-dots menu (top right) → **Import** → **Import using the SQLite DB file from export**, and choose it.
+3. Install the plugin, then open the timeline panel.
+
+It contains 60 world-history entries — 20 eras, 15 people and 25 events, spanning the Bronze Age to the fall of the Berlin Wall — tagged across six topics (Europe, East Asia, Americas, Science, Religion, Warfare). Between them they exercise every `tl-date` form the plugin accepts, plus overlapping eras, dense clusters of events, and entries stored both as pages and as blocks. Dates come from Wikidata (CC0).
+
 ## Setup
 
 The plugin reads three tag properties off a `#tl` tag: `tl-date`, `tl-topic`, `tl-type`. There are two ways to create them.
@@ -27,7 +37,7 @@ Open the timeline panel (toolbar button, see below) on a graph that doesn't have
 
 ### Optional: a dropdown for `tl-type`
 
-Plugins cannot predefine dropdown choices on a Logseq property — this is an upstream limitation (see [`./docs/logseq-bug-report.md`](./docs/logseq-bug-report.md), filed against `logseq/db-test`). If you'd like `event` / `era` / `person` to appear as a dropdown instead of free text, open `tl-type`'s property settings and add those three choices yourself — once per graph, about 30 seconds. Values typed in without the dropdown work identically either way.
+Plugins cannot predefine dropdown choices on a Logseq property — this is an upstream limitation (see [`./docs/logseq-bug-report.md`](./docs/logseq-bug-report.md), filed against `logseq/db-test`). If you'd like `event` / `era` / `person` to appear as a dropdown instead of free text, open `tl-type`'s property settings and add those three choices yourself — once per graph, about 30 seconds. Values typed in without the dropdown work identically either way, and capitalisation doesn't matter: `Era`, `era` and `ERA` are all read the same way (Logseq's property editor title-cases choices as you add them).
 
 ## Usage
 

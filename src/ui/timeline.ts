@@ -135,6 +135,58 @@ function staggerWhiskerLabels(container: HTMLElement): void {
   }
 }
 
+// Era washes (`.vis-background`) all print their label at the top of the
+// band, so eras overlapping in time print their labels on top of each other
+// ("Middle Ages" over "Islamic Golden Age"). vis owns the label's horizontal
+// placement — it rewrites `transform: translateX(...)` on every redraw — but
+// it never touches `top`, so vertical lanes are ours to assign and they
+// survive a redraw (verified in the harness).
+//
+// Greedy left-to-right lane packing: a label takes the first lane whose
+// last-placed label ends before this one starts. Lanes are capped to what
+// fits inside the band, so labels can never spill past the wash they belong
+// to; past the cap the least-occupied lane wins and some overlap remains,
+// which zooming in resolves.
+const BG_LANE_GUTTER_PX = 8;
+const BG_LANE_FALLBACK_H = 20;
+
+function staggerBackgroundLabels(container: HTMLElement): void {
+  const items = [...container.querySelectorAll<HTMLElement>(".vis-item.vis-background")]
+    .map((item) => ({ item, content: item.querySelector<HTMLElement>(".vis-item-content") }))
+    .filter((b): b is { item: HTMLElement; content: HTMLElement } => b.content !== null);
+  if (items.length < 2) {
+    items.forEach(({ content }) => content.style.removeProperty("top"));
+    return;
+  }
+
+  // Batch reset, then a single measure pass — same measure/write discipline
+  // as staggerWhiskerLabels, to keep this to one reflow per redraw.
+  for (const { content } of items) content.style.removeProperty("top");
+
+  const measured = items
+    .map(({ item, content }) => {
+      const label = content.getBoundingClientRect();
+      const band = item.getBoundingClientRect();
+      return { content, left: label.left, right: label.right, labelH: label.height, bandH: band.height };
+    })
+    .sort((a, b) => a.left - b.left);
+
+  const laneH = Math.max(measured[0].labelH, BG_LANE_FALLBACK_H);
+  const tallestBand = Math.max(...measured.map((m) => m.bandH));
+  const maxLanes = Math.max(1, Math.floor(tallestBand / laneH));
+
+  const laneEnds: number[] = []; // rightmost x occupied in each lane
+  for (const m of measured) {
+    let lane = laneEnds.findIndex((end) => end + BG_LANE_GUTTER_PX <= m.left);
+    if (lane === -1) {
+      if (laneEnds.length < maxLanes) lane = laneEnds.length;
+      else lane = laneEnds.indexOf(Math.min(...laneEnds)); // no free lane — least-bad
+    }
+    laneEnds[lane] = m.right;
+    if (lane > 0) m.content.style.top = `${lane * laneH}px`;
+  }
+}
+
 // vis-timeline's default axis formatter drops the minus sign on BCE year
 // labels (e.g. "-500" renders as "500"), so a mixed-era view can't be told
 // apart from a CE one by reading the text alone. Only run when the visible
@@ -205,6 +257,7 @@ export function mountTimeline(
 
   const onChanged = () => {
     updateWhiskerClasses(container);
+    staggerBackgroundLabels(container);
     fixBceAxisLabels(container, timeline);
   };
   timeline.on("changed", onChanged);
